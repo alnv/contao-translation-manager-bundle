@@ -1,0 +1,45 @@
+{
+  "name": "alnv/translation-manager-bundle",
+  "type": "contao-bundle",
+  "license": "proprietary",
+  "description": "",
+  "authors": [
+    {
+      "name": "Alexander Naumov",
+      "homepage": "https://alexandernaumov.de",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "email": "mail@alexandernaumov.de",
+    "issues": "https://github.com/alnv/contao-translation-manager-bundle/issues"
+  },
+  "autoload": {
+    "psr-4": {
+      "Alnv\\ContaoTranslationManagerBundle\\": "src/"
+    },
+    "classmap": [
+      "src/Resources/contao/"
+    ],
+    "exclude-from-classmap": [
+      "src/Resources/contao/dca/",
+      "src/Resources/contao/config/",
+      "src/Resources/contao/languages/"
+    ]
+  },
+  "require": {
+    "php":">=7.1",
+    "contao/core-bundle":"~4.4"
+  },
+  "config": {
+    "preferred-install": "dist"
+  },
+  "extra": {
+    "contao": {
+      "sources": {
+        "": "system/modules/contao-translation-manager-bundle"
+      }
+    },
+    "contao-manager-plugin": "Alnv\\ContaoTranslationManagerBundle\\ContaoManager\\Plugin"
+  }
+}
