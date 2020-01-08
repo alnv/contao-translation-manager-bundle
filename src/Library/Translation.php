@@ -31,7 +31,7 @@ class Translation extends CacheResolver {
 
     public function translate( $strKey, $strFallbackLabel = '', $arrData = [] ) {
 
-        $strTranslation =  $this->get( $strKey );
+        $strTranslation = $this->get( $strKey );
 
         if ( $strTranslation == null ) {
 
