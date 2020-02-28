@@ -2,21 +2,17 @@
 
 namespace Alnv\ContaoTranslationManagerBundle\Library;
 
-
 class Translation extends CacheResolver {
-
 
     protected $strKey = 'name';
     protected $strTable = 'tl_translation';
     protected $strValue = 'translation';
     protected static $objInstance = null;
 
-
     protected function setModelOptions() {
 
         return [ 'column' => [ 'language=?' ] , 'value' => [ $this->strLanguage ] ];
     }
-
 
     public static function getInstance( $strLanguage = '' ) {
 
@@ -27,7 +23,6 @@ class Translation extends CacheResolver {
 
         return self::$objInstance;
     }
-
 
     public function translate( $strKey, $strFallbackLabel = '', $arrData = [] ) {
 
