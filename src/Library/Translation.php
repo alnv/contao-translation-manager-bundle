@@ -24,15 +24,14 @@ class Translation extends CacheResolver {
         return self::$objInstance;
     }
 
-    public function translate( $strKey, $strFallbackLabel = '', $arrData = [] ) {
+    public function translate($strKey, $strFallbackLabel = '', $arrData = []) {
 
-        $strTranslation = $this->get( $strKey );
+        $strTranslation = $this->get($strKey);
 
         if ( $strTranslation == null ) {
-
             $strTranslation = $strFallbackLabel;
         }
 
-        return \StringUtil::parseSimpleTokens( $strTranslation, $arrData );
+        return \StringUtil::parseSimpleTokens($strTranslation, $arrData);
     }
 }
