@@ -5,11 +5,8 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
         'dataContainer' => 'Table',
         'sql' => [
             'keys' => [
-                'id' => [
-                    'id' => 'primary',
-                    'name' => 'index',
-                    'language' => 'index'
-                ]
+                'id' => 'primary',
+                'name,language' => 'index'
             ]
         ]
     ],
