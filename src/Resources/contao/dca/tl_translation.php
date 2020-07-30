@@ -90,11 +90,12 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
         'translation' => [
             'inputType' => 'textarea',
             'eval' => [
-                'tl_class' => 'clr'
+                'tl_class' => 'clr',
+                'allowHtml' => true
             ],
             'search' => true,
             'exclude' => true,
-            'sql' => [ 'type' => 'text', 'notnull' => false ]
+            'sql' => ['type' => 'text', 'notnull' => false]
         ]
     ]
 ];

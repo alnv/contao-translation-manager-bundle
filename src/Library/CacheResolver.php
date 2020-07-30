@@ -9,10 +9,10 @@ abstract class CacheResolver {
     protected $strValue;
     protected $strLanguage;
 
-    public function __construct( $strLanguage='' ) {
+    public function __construct($strLanguage='') {
 
-        if ( !$strLanguage ) {
-            $strLanguage = \System::getContainer()->get('request_stack')->getCurrentRequest()->getLocale();
+        if (!$strLanguage) {
+            $strLanguage = $GLOBALS['TL_LANGUAGE'] ?: \System::getContainer()->get('request_stack')->getCurrentRequest()->getLocale();
         }
 
         $this->strLanguage = $strLanguage;
@@ -23,16 +23,16 @@ abstract class CacheResolver {
 
         $objEntities = $this->getEntities();
 
-        if ( $objEntities == null ) {
+        if ($objEntities == null) {
             return null;
         }
 
-        while ( $objEntities->next() ) {
+        while ($objEntities->next()) {
             $strKey = $objEntities->{$this->strKey};
-            $strValue = \StringUtil::decodeEntities( $objEntities->{$this->strValue} );
+            $strValue = \StringUtil::decodeEntities($objEntities->{$this->strValue});
 
-            if ( $strKey && !\Cache::has( $strKey ) ) {
-                \Cache::set( $strKey, $strValue );
+            if ($strKey && !\Cache::has($strKey)) {
+                \Cache::set($strKey, $strValue);
             }
         }
     }
@@ -41,14 +41,14 @@ abstract class CacheResolver {
 
         $strModel = \Model::getClassFromTable($this->strTable);
 
-        if ( $strModel ) {
+        if ($strModel) {
             $objModel = new $strModel();
-            return $objModel->findAll( $this->setModelOptions() );
+            return $objModel->findAll($this->setModelOptions());
         }
-        if ( in_array( 'AlnvContaoCatalogManagerBundle',  array_keys( \System::getContainer()->getParameter('kernel.bundles') ) ) ) {
-            $objModel = new \Alnv\ContaoCatalogManagerBundle\Helper\ModelWizard( $this->strTable );
+        if (in_array('AlnvContaoCatalogManagerBundle',  array_keys(\System::getContainer()->getParameter('kernel.bundles')))) {
+            $objModel = new \Alnv\ContaoCatalogManagerBundle\Helper\ModelWizard($this->strTable);
             $objModel = $objModel->getModel();
-            return $objModel->findAll( $this->setModelOptions() );
+            return $objModel->findAll($this->setModelOptions());
         }
 
         return null;
@@ -56,12 +56,12 @@ abstract class CacheResolver {
 
     abstract protected function setModelOptions();
 
-    public function get( $strKey) {
+    public function get($strKey) {
 
-        if ( !\Cache::has( $strKey ) ) {
+        if (!\Cache::has($strKey)) {
             return null;
         }
 
-        return \Cache::get( $strKey );
+        return \Cache::get($strKey);
     }
 }

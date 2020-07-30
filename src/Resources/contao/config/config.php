@@ -11,4 +11,5 @@ array_insert( $GLOBALS['BE_MOD']['system'], 3, [
     ]
 ]);
 
+$GLOBALS['TL_HOOKS']['replaceInsertTags'][] = ['Alnv\ContaoTranslationManagerBundle\Library\Inserttag', 'replace'];
 $GLOBALS['TL_MODELS']['tl_translation'] = 'Alnv\ContaoTranslationManagerBundle\Models\TranslationModel';

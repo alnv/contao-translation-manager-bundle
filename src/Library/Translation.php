@@ -5,20 +5,20 @@ namespace Alnv\ContaoTranslationManagerBundle\Library;
 class Translation extends CacheResolver {
 
     protected $strKey = 'name';
-    protected $strTable = 'tl_translation';
     protected $strValue = 'translation';
+    protected $strTable = 'tl_translation';
     protected static $objInstance = null;
 
     protected function setModelOptions() {
 
-        return [ 'column' => [ 'language=?' ] , 'value' => [ $this->strLanguage ] ];
+        return ['column' => ['language=?'] , 'value' => [$this->strLanguage]];
     }
 
-    public static function getInstance( $strLanguage = '' ) {
+    public static function getInstance($strLanguage = '') {
 
-        if ( null === self::$objInstance ) {
+        if (null === self::$objInstance) {
 
-            self::$objInstance = new self( $strLanguage );
+            self::$objInstance = new self($strLanguage);
         }
 
         return self::$objInstance;
@@ -28,7 +28,7 @@ class Translation extends CacheResolver {
 
         $strTranslation = $this->get($strKey);
 
-        if ( $strTranslation == null ) {
+        if ($strTranslation == null) {
             $strTranslation = $strFallbackLabel;
         }
 
