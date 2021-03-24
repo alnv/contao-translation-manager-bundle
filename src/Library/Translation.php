@@ -11,7 +11,7 @@ class Translation extends CacheResolver {
 
     protected function setModelOptions() {
 
-        return ['column' => ['language=?'] , 'value' => [$this->strLanguage]];
+        return ['column' => ['language=?', 'invisible!=?'] , 'value' => [$this->strLanguage, '1']];
     }
 
     public static function getInstance($strLanguage = '') {
@@ -26,11 +26,7 @@ class Translation extends CacheResolver {
 
     public function translate($strKey, $strFallbackLabel='', $arrData = []) {
 
-        $strTranslation = $this->get($strKey);
-
-        if ($strTranslation == null) {
-            $strTranslation = $strFallbackLabel;
-        }
+        $strTranslation = $this->get($strKey, $strFallbackLabel);
         $strTranslation = \Controller::replaceInsertTags($strTranslation);
         return \StringUtil::parseSimpleTokens($strTranslation, $arrData);
     }

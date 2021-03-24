@@ -30,7 +30,6 @@ abstract class CacheResolver {
         while ($objEntities->next()) {
             $strKey = $objEntities->{$this->strKey};
             $strValue = \StringUtil::decodeEntities($objEntities->{$this->strValue});
-
             if ($strKey && !\Cache::has($strKey)) {
                 \Cache::set($strKey, $strValue);
             }
@@ -56,12 +55,25 @@ abstract class CacheResolver {
 
     abstract protected function setModelOptions();
 
-    public function get($strKey) {
+    public function get($strKey, $strFallback) {
 
         if (!\Cache::has($strKey)) {
-            return null;
+
+            $objTranslation = \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel::findOneBy('name', $strKey);
+            if (!$objTranslation) {
+                $objTranslation = new \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel();
+            }
+            $objTranslation->tstamp = time();
+            $objTranslation->invisible = '1';
+            $objTranslation->name = $strKey;
+            $objTranslation->language = $this->strLanguage;
+            $objTranslation->translation = $strFallback ?: '';
+            $objTranslation->save();
+
+            return $strFallback;
         }
 
         return \Cache::get($strKey);
     }
+
 }

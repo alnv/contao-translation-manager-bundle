@@ -50,7 +50,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
     ],
     'palettes' => [
         '__selector__' => [],
-        'default' => 'language,name,translation',
+        'default' => 'language,name,translation,invisible',
     ],
     'subpalettes' => [],
     'fields' => [
@@ -72,7 +72,6 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
             'length' => 32,
             'flag' => 32,
             'options' => \System::getLanguages(),
-            'exclude' => true,
             'filter' => true,
             'sql' => ['type' => 'string', 'length' => 5, 'default' => '']
         ],
@@ -84,7 +83,6 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
                 'tl_class' => 'w50'
             ],
             'search' => true,
-            'exclude' => true,
             'sql' => ['type' => 'string', 'length' => 64, 'default' => '']
         ],
         'translation' => [
@@ -94,8 +92,16 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
                 'allowHtml' => true
             ],
             'search' => true,
-            'exclude' => true,
             'sql' => ['type' => 'text', 'notnull' => false]
+        ],
+        'invisible' => [
+            'inputType' => 'checkbox',
+            'eval' => [
+                'tl_class' => 'clr',
+                'multiple' => false
+            ],
+            'filter' => true,
+            'sql' => ['type'=>'string', 'fixed'=>true, 'length' => '1', 'notnull'=>false]
         ]
     ]
 ];
