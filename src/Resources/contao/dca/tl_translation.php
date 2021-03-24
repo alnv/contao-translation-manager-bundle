@@ -14,11 +14,11 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
         'sorting' => [
             'mode' => 2,
             'flag' => 4,
-            'fields' => [ 'language' ],
+            'fields' => ['language'],
             'panelLayout' => 'filter;sort,search,limit'
         ],
         'label' => [
-            'fields' => [ 'name', 'translation' ],
+            'fields' => ['name', 'translation'],
             'showColumns' => true
         ],
         'operations' => [
