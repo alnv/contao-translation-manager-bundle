@@ -62,9 +62,10 @@ abstract class CacheResolver {
                 return $strFallback;
             }
             $objTranslation = \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel::findOneBy('name', $strKey);
-            if (!$objTranslation) {
-                $objTranslation = new \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel();
+            if ($objTranslation) {
+                return $strFallback;
             }
+            $objTranslation = new \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel();
             $objTranslation->tstamp = time();
             $objTranslation->invisible = '1';
             $objTranslation->name = $strKey;
