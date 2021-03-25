@@ -9,5 +9,5 @@ $GLOBALS['TL_LANG']['tl_translation']['show'] = [ 'Details', 'Details der Übers
 
 $GLOBALS['TL_LANG']['tl_translation']['language'] = [ 'Sprache', 'Bitte wählen Sie eine Sprache aus.' ];
 $GLOBALS['TL_LANG']['tl_translation']['translation'] = [ 'Übersetzung', 'Hier können Sie Ihre Übersetzung eingeben.' ];
-$GLOBALS['TL_LANG']['tl_translation']['invisible'] = [ 'Ausblenden', '' ];
+$GLOBALS['TL_LANG']['tl_translation']['invisible'] = ['Übersetzung deaktivieren', ''];
 $GLOBALS['TL_LANG']['tl_translation']['name'] = [ 'Feldname', 'Bitte geben Sie den Feldnamen des zu übersetzenden Textes ein.' ];

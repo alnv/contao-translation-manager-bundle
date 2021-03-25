@@ -2,7 +2,7 @@
 
 define( "CATALOG_TRANSLATION_BUNDLE_VERSION", "1.0" );
 
-array_insert( $GLOBALS['BE_MOD']['system'], 3, [
+array_insert( $GLOBALS['BE_MOD']['catalog-manager-bundle'], 3, [
     'translation-manager' => [
         'name' => 'translation-manager-bundle',
         'tables' => [

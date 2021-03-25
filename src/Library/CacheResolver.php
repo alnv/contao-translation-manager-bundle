@@ -58,7 +58,9 @@ abstract class CacheResolver {
     public function get($strKey, $strFallback) {
 
         if (!\Cache::has($strKey)) {
-
+            if (TL_MODE != 'FE' || !$strFallback) {
+                return $strFallback;
+            }
             $objTranslation = \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel::findOneBy('name', $strKey);
             if (!$objTranslation) {
                 $objTranslation = new \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel();
@@ -66,8 +68,7 @@ abstract class CacheResolver {
             $objTranslation->tstamp = time();
             $objTranslation->invisible = '1';
             $objTranslation->name = $strKey;
-            $objTranslation->language = $this->strLanguage;
-            $objTranslation->translation = $strFallback ?: '';
+            $objTranslation->translation = $strFallback;
             $objTranslation->save();
 
             return $strFallback;
