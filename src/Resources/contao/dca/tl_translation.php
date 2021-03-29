@@ -101,7 +101,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
                 'multiple' => false
             ],
             'filter' => true,
-            'sql' => ['type'=>'string', 'fixed'=>true, 'length' => '1', 'notnull'=>false]
+            'sql' => ['type'=>'string', 'fixed'=>true, 'length' => '1', 'default' => '','notnull' => false]
         ]
     ]
 ];

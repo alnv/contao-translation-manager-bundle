@@ -11,7 +11,7 @@ class Translation extends CacheResolver {
 
     protected function setModelOptions() {
 
-        return ['column' => ['language=?', 'invisible!=?'] , 'value' => [$this->strLanguage, '1']];
+        return ['column' => ['language=? AND (invisible IS NULL OR invisible="")'] , 'value' => [$this->strLanguage]];
     }
 
     public static function getInstance($strLanguage = '') {
