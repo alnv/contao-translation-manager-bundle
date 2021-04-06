@@ -65,12 +65,14 @@ abstract class CacheResolver {
             if ($objTranslation) {
                 return $strFallback;
             }
-            $objTranslation = new \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel();
-            $objTranslation->tstamp = time();
-            $objTranslation->invisible = '1';
-            $objTranslation->name = $strKey;
-            $objTranslation->translation = $strFallback;
-            $objTranslation->save();
+            try {
+                $objTranslation = new \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel();
+                $objTranslation->tstamp = time();
+                $objTranslation->invisible = '1';
+                $objTranslation->name = $strKey;
+                $objTranslation->translation = $strFallback;
+                $objTranslation->save();
+            } catch (\ErrorException $exception) {}
 
             return $strFallback;
         }
