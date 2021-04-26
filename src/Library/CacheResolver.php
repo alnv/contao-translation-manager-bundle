@@ -55,7 +55,7 @@ abstract class CacheResolver {
 
     abstract protected function setModelOptions();
 
-    public function get($strKey, $strFallback) {
+    public function get($strKey, $strFallback='') {
 
         if (!\Cache::has($strKey)) {
             if (TL_MODE != 'FE' || !$strFallback) {
