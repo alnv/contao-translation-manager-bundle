@@ -78,12 +78,12 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
         'name' => [
             'inputType' => 'text',
             'eval' => [
-                'maxlength' => 64,
+                'maxlength' => 128,
                 'mandatory' => true,
                 'tl_class' => 'w50'
             ],
             'search' => true,
-            'sql' => ['type' => 'string', 'length' => 64, 'default' => '']
+            'sql' => ['type' => 'string', 'length' => 128, 'default' => '']
         ],
         'translation' => [
             'inputType' => 'textarea',
