@@ -28,6 +28,7 @@ class Translation extends CacheResolver {
 
         $strTranslation = $this->get($strKey, $strFallbackLabel);
         $strTranslation = \Controller::replaceInsertTags($strTranslation);
+
         return \StringUtil::parseSimpleTokens($strTranslation, $arrData);
     }
 }
