@@ -23,16 +23,20 @@ abstract class CacheResolver {
 
         $objEntities = $this->getEntities();
 
-        if ($objEntities == null) {
-            return null;
+        if ($objEntities) {
+            while ($objEntities->next()) {
+                $strKey = $objEntities->{$this->strKey};
+                $strValue = \StringUtil::decodeEntities($objEntities->{$this->strValue});
+                if ($strKey && !\Cache::has($strKey)) {
+                    \Cache::set($strKey, $strValue);
+                }
+            }
         }
 
-        while ($objEntities->next()) {
-            $strKey = $objEntities->{$this->strKey};
-            $strValue = \StringUtil::decodeEntities($objEntities->{$this->strValue});
-            if ($strKey && !\Cache::has($strKey)) {
-                \Cache::set($strKey, $strValue);
-            }
+        $objEmpty = \Database::getInstance()->prepare('SELECT * FROM ' . $this->strTable . ' WHERE invisible=?')->execute(1);
+
+        while ($objEmpty->next()) {
+            \Cache::set('invisible_' . $objEmpty->{$this->strKey}, true);
         }
     }
 
@@ -58,13 +62,21 @@ abstract class CacheResolver {
     public function get($strKey, $strFallback='') {
 
         if (!\Cache::has($strKey)) {
+
             if (TL_MODE != 'FE' || !$strFallback) {
                 return $strFallback;
             }
+
+            if (\Cache::get('invisible_' . $strKey)) {
+                return $strFallback;
+            }
+
             $objTranslation = \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel::findOneBy('name', $strKey);
+
             if ($objTranslation) {
                 return $strFallback;
             }
+
             try {
                 $objTranslation = new \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel();
                 $objTranslation->tstamp = time();
