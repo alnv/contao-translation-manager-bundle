@@ -28,11 +28,10 @@ class Translation extends CacheResolver {
 
     public function translate($strKey, $strFallbackLabel='', $arrData = []) {
 
-        $objParser = System::getContainer()->get('contao.insert_tag.parser');
 
         $strTranslation = $this->get($strKey, $strFallbackLabel);
-        $strTranslation = $objParser->replaceInline((string) $strTranslation);
+        $strTranslation = \Controller::replaceInsertTags($strTranslation);
 
-        return System::getContainer()->get('contao.string.simple_token_parser')->parse($strTranslation, $arrData, true);
+        return \StringUtil::parseSimpleTokens($strTranslation, $arrData);
     }
 }
