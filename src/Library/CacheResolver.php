@@ -28,7 +28,7 @@ abstract class CacheResolver {
 
         if ($objEntities) {
             while ($objEntities->next()) {
-                $strKey = $objEntities->{$this->strKey};
+                $strKey = $this->getKeyname($objEntities->{$this->strKey});
                 $strValue = \StringUtil::decodeEntities($objEntities->{$this->strValue});
                 $objCacheEntity = $this->objCache->getItem($strKey);
 
@@ -42,7 +42,8 @@ abstract class CacheResolver {
         $objEmpty = \Database::getInstance()->prepare('SELECT * FROM ' . $this->strTable . ' WHERE invisible=?')->execute(1);
 
         while ($objEmpty->next()) {
-            $objCacheInvisible = $this->objCache->getItem('invisible_' . $objEmpty->{$this->strKey});
+
+            $objCacheInvisible = $this->objCache->getItem('invisible_' . $this->getKeyname($objEmpty->{$this->strKey}));
             if (!$objCacheInvisible->isHit()) {
                 $objCacheInvisible->set(true);
                 $this->objCache->save($objCacheInvisible);
@@ -75,7 +76,7 @@ abstract class CacheResolver {
 
     public function get($strKey, $strFallback='') {
 
-        $objCacheResult = $this->objCache->getItem($strKey);
+        $objCacheResult = $this->objCache->getItem($this->getKeyname($strKey));
 
         if ($objCacheResult->isHit()) {
             return $objCacheResult->get();
@@ -108,21 +109,16 @@ abstract class CacheResolver {
 
         /*
         if (!\Cache::has($strKey)) {
-
             if (TL_MODE != 'FE' || !$strFallback) {
                 return $strFallback;
             }
-
             if (\Cache::get('invisible_' . $strKey)) {
                 return $strFallback;
             }
-
             $objTranslation = \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel::findOneBy('name', $strKey);
-
             if ($objTranslation) {
                 return $strFallback;
             }
-
             try {
                 $objTranslation = new \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel();
                 $objTranslation->tstamp = time();
@@ -131,12 +127,14 @@ abstract class CacheResolver {
                 $objTranslation->translation = $strFallback;
                 $objTranslation->save();
             } catch (\ErrorException $exception) {}
-
             return $strFallback;
         }
-
         return \Cache::get($strKey);
         */
     }
 
+    protected function getKeyname($strName) {
+
+        return str_replace(["{", "}", "(", ")", "/", "\\", "@", ':'], '', $strName);
+    }
 }
