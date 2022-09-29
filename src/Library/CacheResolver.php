@@ -76,7 +76,8 @@ abstract class CacheResolver {
 
     public function get($strKey, $strFallback='') {
 
-        $objCacheResult = $this->objCache->getItem($this->getKeyname($strKey));
+        $strKey = $this->getKeyname($strKey);
+        $objCacheResult = $this->objCache->getItem($strKey);
 
         if ($objCacheResult->isHit()) {
             return $objCacheResult->get();
