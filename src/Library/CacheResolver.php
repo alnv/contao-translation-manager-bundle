@@ -12,13 +12,14 @@ abstract class CacheResolver {
 
     public function __construct($strLanguage='') {
 
-        $this->objCache = new \Symfony\Component\Cache\Adapter\FilesystemAdapter('cm.translation.cache', 60, TL_ROOT . '/var/cache');
-
         if (!$strLanguage) {
             $strLanguage = $GLOBALS['TL_LANGUAGE'] ?: \System::getContainer()->get('request_stack')->getCurrentRequest()->getLocale();
         }
 
+        $this->objCache = new \Symfony\Component\Cache\Adapter\FilesystemAdapter('cm.translation.cache.' . $strLanguage, 60, TL_ROOT . '/var/cache');
+
         $this->strLanguage = $strLanguage;
+
         $this->setDataIntoCache();
     }
 
@@ -28,6 +29,9 @@ abstract class CacheResolver {
 
         if ($objEntities) {
             while ($objEntities->next()) {
+                if ($this->strLanguage != $objEntities->language) {
+                    continue;
+                }
                 $strKey = $this->getKeyname($objEntities->{$this->strKey});
                 $strValue = \StringUtil::decodeEntities($objEntities->{$this->strValue});
                 $objCacheEntity = $this->objCache->getItem($strKey);
@@ -93,6 +97,7 @@ abstract class CacheResolver {
         }
 
         $objTranslation = \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel::findOneBy('name', $strKey);
+
         if ($objTranslation) {
             return $strFallback;
         }
@@ -107,31 +112,6 @@ abstract class CacheResolver {
         } catch (\ErrorException $exception) {}
 
         return $strFallback;
-
-        /*
-        if (!\Cache::has($strKey)) {
-            if (TL_MODE != 'FE' || !$strFallback) {
-                return $strFallback;
-            }
-            if (\Cache::get('invisible_' . $strKey)) {
-                return $strFallback;
-            }
-            $objTranslation = \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel::findOneBy('name', $strKey);
-            if ($objTranslation) {
-                return $strFallback;
-            }
-            try {
-                $objTranslation = new \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel();
-                $objTranslation->tstamp = time();
-                $objTranslation->invisible = '1';
-                $objTranslation->name = $strKey;
-                $objTranslation->translation = $strFallback;
-                $objTranslation->save();
-            } catch (\ErrorException $exception) {}
-            return $strFallback;
-        }
-        return \Cache::get($strKey);
-        */
     }
 
     protected function getKeyname($strName) {
