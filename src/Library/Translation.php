@@ -4,19 +4,25 @@ namespace Alnv\ContaoTranslationManagerBundle\Library;
 
 use Contao\System;
 
-class Translation extends CacheResolver {
+class Translation extends CacheResolver
+{
 
     protected $strKey = 'name';
+
     protected $strValue = 'translation';
+
     protected $strTable = 'tl_translation';
+
     protected static $objInstance = null;
 
-    protected function setModelOptions() {
+    protected function setModelOptions()
+    {
 
-        return ['column' => ['language=? AND (invisible IS NULL OR invisible="")'] , 'value' => [$this->strLanguage]];
+        return ['column' => ['language=? AND (invisible IS NULL OR invisible="")'], 'value' => [$this->strLanguage]];
     }
 
-    public static function getInstance($strLanguage='') {
+    public static function getInstance($strLanguage = '')
+    {
 
         if (null === self::$objInstance) {
 
@@ -26,12 +32,14 @@ class Translation extends CacheResolver {
         return self::$objInstance;
     }
 
-    public function translate($strKey, $strFallbackLabel='', $arrData = []) {
+    public function translate($strKey, $strFallbackLabel = '', $arrData = [])
+    {
 
+        $parser = System::getContainer()->get('contao.insert_tag.parser');
 
         $strTranslation = $this->get($strKey, $strFallbackLabel);
-        $strTranslation = \Controller::replaceInsertTags($strTranslation);
+        $strTranslation = $parser->replaceInline((string)$strTranslation);
 
-        return \StringUtil::parseSimpleTokens($strTranslation, $arrData);
+        return System::getContainer()->get('contao.string.simple_token_parser')->parse($strTranslation, $arrData);
     }
 }

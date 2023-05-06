@@ -2,7 +2,17 @@
 
 namespace Alnv\ContaoTranslationManagerBundle\Library;
 
-abstract class CacheResolver {
+use Alnv\ContaoCatalogManagerBundle\Helper\ModelWizard;
+use Alnv\ContaoTranslationManagerBundle\Models\TranslationModel;
+use Contao\Database;
+use Contao\Model;
+use Contao\StringUtil;
+use Contao\System;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\HttpFoundation\Request;
+
+abstract class CacheResolver
+{
 
     protected $strKey;
     protected $strTable;
@@ -10,20 +20,22 @@ abstract class CacheResolver {
     protected $strLanguage;
     protected $objCache;
 
-    public function __construct($strLanguage='') {
+    public function __construct($strLanguage = '')
+    {
 
         if (!$strLanguage) {
-            $strLanguage = $GLOBALS['TL_LANGUAGE'] ?: \System::getContainer()->get('request_stack')->getCurrentRequest()->getLocale();
+            $strLanguage = $GLOBALS['TL_LANGUAGE'] ?: System::getContainer()->get('request_stack')->getCurrentRequest()->getLocale();
         }
 
-        $this->objCache = new \Symfony\Component\Cache\Adapter\FilesystemAdapter('cm.translation.cache.' . $strLanguage, 60, TL_ROOT . '/var/cache');
+        $this->objCache = new FilesystemAdapter('cm.translation.cache.' . $strLanguage, 60, TL_ROOT . '/var/cache');
 
         $this->strLanguage = $strLanguage;
 
         $this->setDataIntoCache();
     }
 
-    protected function setDataIntoCache() {
+    protected function setDataIntoCache()
+    {
 
         $objEntities = $this->getEntities();
 
@@ -33,7 +45,7 @@ abstract class CacheResolver {
                     continue;
                 }
                 $strKey = $this->getKeyname($objEntities->{$this->strKey});
-                $strValue = \StringUtil::decodeEntities($objEntities->{$this->strValue});
+                $strValue = StringUtil::decodeEntities($objEntities->{$this->strValue});
                 $objCacheEntity = $this->objCache->getItem($strKey);
 
                 if ($strKey && !$objCacheEntity->isHit()) {
@@ -43,7 +55,7 @@ abstract class CacheResolver {
             }
         }
 
-        $objEmpty = \Database::getInstance()->prepare('SELECT * FROM ' . $this->strTable . ' WHERE invisible=?')->execute(1);
+        $objEmpty = Database::getInstance()->prepare('SELECT * FROM ' . $this->strTable . ' WHERE invisible=?')->execute(1);
 
         while ($objEmpty->next()) {
 
@@ -55,21 +67,18 @@ abstract class CacheResolver {
         }
     }
 
-    protected function getEntities() {
+    protected function getEntities()
+    {
 
-        $strModel = \Model::getClassFromTable($this->strTable);
-
+        $strModel = Model::getClassFromTable($this->strTable);
         if ($strModel) {
-
             $objModel = new $strModel();
             return $objModel->findAll($this->setModelOptions());
         }
 
-        if (in_array('AlnvContaoCatalogManagerBundle',  array_keys(\System::getContainer()->getParameter('kernel.bundles')))) {
-
-            $objModel = new \Alnv\ContaoCatalogManagerBundle\Helper\ModelWizard($this->strTable);
+        if (in_array('AlnvContaoCatalogManagerBundle', array_keys(System::getContainer()->getParameter('kernel.bundles')))) {
+            $objModel = new ModelWizard($this->strTable);
             $objModel = $objModel->getModel();
-
             return $objModel->findAll($this->setModelOptions());
         }
 
@@ -78,7 +87,8 @@ abstract class CacheResolver {
 
     abstract protected function setModelOptions();
 
-    public function get($strKey, $strFallback='') {
+    public function get($strKey, $strFallback = '')
+    {
 
         $strKey = $this->getKeyname($strKey);
         $objCacheResult = $this->objCache->getItem($strKey);
@@ -87,7 +97,7 @@ abstract class CacheResolver {
             return $objCacheResult->get();
         }
 
-        if (TL_MODE != 'FE' || !$strFallback) {
+        if (!System::getContainer()->get('contao.routing.scope_matcher')->isFrontendRequest(System::getContainer()->get('request_stack')->getCurrentRequest() ?? Request::create('')) || !$strFallback) {
             return $strFallback;
         }
 
@@ -96,25 +106,27 @@ abstract class CacheResolver {
             return $strFallback;
         }
 
-        $objTranslation = \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel::findOneBy('name', $strKey);
+        $objTranslation = TranslationModel::findOneBy('name', $strKey);
 
         if ($objTranslation) {
             return $strFallback;
         }
 
         try {
-            $objTranslation = new \Alnv\ContaoTranslationManagerBundle\Models\TranslationModel();
+            $objTranslation = new TranslationModel();
             $objTranslation->tstamp = time();
             $objTranslation->invisible = '1';
             $objTranslation->name = $strKey;
             $objTranslation->translation = $strFallback;
             $objTranslation->save();
-        } catch (\ErrorException $exception) {}
+        } catch (\ErrorException $exception) {
+        }
 
         return $strFallback;
     }
 
-    protected function getKeyname($strName) {
+    protected function getKeyname($strName)
+    {
 
         return str_replace(["{", "}", "(", ")", "/", "\\", "@", ':'], '', $strName);
     }

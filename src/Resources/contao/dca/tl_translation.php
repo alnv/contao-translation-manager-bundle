@@ -33,7 +33,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
             'delete' => [
                 'href' => 'act=delete',
                 'icon' => 'delete.gif',
-                'attributes' => 'onclick="if(!confirm(\'' . ($GLOBALS['TL_LANG']['MSC']['deleteConfirm']??'') . '\'))return false;Backend.getScrollOffset()"'
+                'attributes' => 'onclick="if(!confirm(\'' . ($GLOBALS['TL_LANG']['MSC']['deleteConfirm'] ?? '') . '\'))return false;Backend.getScrollOffset()"'
             ],
             'show' => [
                 'href' => 'act=show',
@@ -55,7 +55,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
     'subpalettes' => [],
     'fields' => [
         'id' => [
-            'sql' => ['type' => 'integer', 'autoincrement' => true, 'notnull' => true, 'unsigned' => true ]
+            'sql' => ['type' => 'integer', 'autoincrement' => true, 'notnull' => true, 'unsigned' => true]
         ],
         'tstamp' => [
             'sql' => ['type' => 'integer', 'notnull' => false, 'unsigned' => true, 'default' => 0]
@@ -101,7 +101,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
                 'multiple' => false
             ],
             'filter' => true,
-            'sql' => ['type'=>'string', 'fixed'=>true, 'length' => '1', 'default' => '','notnull' => false]
+            'sql' => ['type' => 'string', 'fixed' => true, 'length' => '1', 'default' => '', 'notnull' => false]
         ]
     ]
 ];

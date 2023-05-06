@@ -1,8 +1,8 @@
 <?php
 
-define( "CATALOG_TRANSLATION_BUNDLE_VERSION", "1.0" );
+use Contao\ArrayUtil;
 
-array_insert( $GLOBALS['BE_MOD']['catalog-manager-bundle'], 3, [
+Contao\ArrayUtil::arrayInsert($GLOBALS['BE_MOD']['catalog-manager-bundle'], 3, [
     'translation-manager' => [
         'name' => 'translation-manager-bundle',
         'tables' => [
