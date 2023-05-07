@@ -27,8 +27,8 @@ abstract class CacheResolver
             $strLanguage = $GLOBALS['TL_LANGUAGE'] ?: System::getContainer()->get('request_stack')->getCurrentRequest()->getLocale();
         }
 
-        $this->objCache = new FilesystemAdapter('cm.translation.cache.' . $strLanguage, 60, TL_ROOT . '/var/cache');
-
+        $strRootDir = System::getContainer()->getParameter('kernel.project_dir');
+        $this->objCache = new FilesystemAdapter('cm.translation.cache.' . $strLanguage, 60, $strRootDir . '/var/cache');
         $this->strLanguage = $strLanguage;
 
         $this->setDataIntoCache();

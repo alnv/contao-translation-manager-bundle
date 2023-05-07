@@ -1,8 +1,11 @@
 <?php
 
+use Contao\System;
+use Contao\DC_Table;
+
 $GLOBALS['TL_DCA']['tl_translation'] = [
     'config' => [
-        'dataContainer' => 'Table',
+        'dataContainer' => DC_Table::class,
         'sql' => [
             'keys' => [
                 'id' => 'primary',
@@ -70,8 +73,10 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
                 'includeBlankOption' => true
             ],
             'length' => 32,
-            'flag' => 32,
-            'options' => \System::getLanguages(),
+            'flag' => 3,
+            'options_callback' => function() {
+                return System::getContainer()->get('contao.intl.locales')->getLocales(null, true);
+            },
             'filter' => true,
             'sql' => ['type' => 'string', 'length' => 5, 'default' => '']
         ],

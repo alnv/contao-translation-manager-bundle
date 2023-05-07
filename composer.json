@@ -17,21 +17,10 @@
   "autoload": {
     "psr-4": {
       "Alnv\\ContaoTranslationManagerBundle\\": "src/"
-    },
-    "classmap": [
-      "src/Resources/contao/"
-    ],
-    "exclude-from-classmap": [
-      "src/Resources/contao/dca/",
-      "src/Resources/contao/config/",
-      "src/Resources/contao/languages/"
-    ]
+    }
   },
   "require": {
     "contao/core-bundle": "~5.1"
-  },
-  "config": {
-    "preferred-install": "dist"
   },
   "extra": {
     "contao-manager-plugin": "Alnv\\ContaoTranslationManagerBundle\\ContaoManager\\Plugin"
