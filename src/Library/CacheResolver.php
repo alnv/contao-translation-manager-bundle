@@ -59,7 +59,7 @@ abstract class CacheResolver {
 
         $strModel = \Model::getClassFromTable($this->strTable);
 
-        if ($strModel) {
+        if ($strModel && class_exists($strModel)) {
 
             $objModel = new $strModel();
             return $objModel->findAll($this->setModelOptions());
