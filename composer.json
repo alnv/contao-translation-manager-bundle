@@ -20,7 +20,7 @@
     }
   },
   "require": {
-    "contao/core-bundle": "~5.1"
+    "contao/core-bundle": "~4.13 || ~5.0"
   },
   "extra": {
     "contao-manager-plugin": "Alnv\\ContaoTranslationManagerBundle\\ContaoManager\\Plugin"
