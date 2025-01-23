@@ -14,11 +14,15 @@ use Symfony\Component\HttpFoundation\Request;
 abstract class CacheResolver
 {
 
-    protected $strKey;
-    protected $strTable;
-    protected $strValue;
-    protected $strLanguage;
-    protected $objCache;
+    protected string $strKey;
+
+    protected string $strTable;
+
+    protected string $strValue;
+
+    protected string $strLanguage;
+
+    protected FilesystemAdapter $objCache;
 
     public function __construct($strLanguage = '')
     {
@@ -34,7 +38,7 @@ abstract class CacheResolver
         $this->setDataIntoCache();
     }
 
-    protected function setDataIntoCache()
+    protected function setDataIntoCache(): void
     {
 
         $objEntities = $this->getEntities();
@@ -76,9 +80,11 @@ abstract class CacheResolver
             return $objModel->findAll($this->setModelOptions());
         }
 
-        if (in_array('AlnvContaoCatalogManagerBundle', array_keys(System::getContainer()->getParameter('kernel.bundles')))) {
+        if (in_array('AlnvContaoCatalogManagerBundle', \array_keys(System::getContainer()->getParameter('kernel.bundles')))) {
+
             $objModel = new ModelWizard($this->strTable);
             $objModel = $objModel->getModel();
+
             return $objModel->findAll($this->setModelOptions());
         }
 
@@ -125,9 +131,8 @@ abstract class CacheResolver
         return $strFallback;
     }
 
-    protected function getKeyname($strName)
+    protected function getKeyname($strName): string
     {
-
         return str_replace(["{", "}", "(", ")", "/", "\\", "@", ':'], '', $strName);
     }
 }

@@ -7,15 +7,15 @@ use Contao\System;
 class Translation extends CacheResolver
 {
 
-    protected $strKey = 'name';
+    protected string $strKey = 'name';
 
-    protected $strValue = 'translation';
+    protected string $strValue = 'translation';
 
-    protected $strTable = 'tl_translation';
+    protected string $strTable = 'tl_translation';
 
     protected static $objInstance = null;
 
-    protected function setModelOptions()
+    protected function setModelOptions(): array
     {
 
         return ['column' => ['language=? AND (invisible IS NULL OR invisible="")'], 'value' => [$this->strLanguage]];
@@ -32,7 +32,7 @@ class Translation extends CacheResolver
         return self::$objInstance;
     }
 
-    public function translate($strKey, $strFallbackLabel = '', $arrData = [])
+    public function translate($strKey, $strFallbackLabel = '', $arrData = []): string
     {
 
         $parser = System::getContainer()->get('contao.insert_tag.parser');
