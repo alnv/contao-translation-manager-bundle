@@ -122,7 +122,7 @@ abstract class CacheResolver
             $objTranslation = new TranslationModel();
             $objTranslation->tstamp = time();
             $objTranslation->invisible = '1';
-            $objTranslation->name = $strKey;
+            $objTranslation->name = \substr($strKey, 0, 255);
             $objTranslation->translation = $strFallback;
             $objTranslation->save();
         } catch (\ErrorException $exception) {
