@@ -1,5 +1,7 @@
 <?php
 
+$GLOBALS['TL_LANG']['tl_translation']['tableLabel'] = 'Übersetzungen';
+
 $GLOBALS['TL_LANG']['tl_translation']['new'] = ['Neue Übersetzung anlegen', 'Hier können Sie eine neue Übersetzung anlegen.'];
 
 $GLOBALS['TL_LANG']['tl_translation']['delete'] = ['Löschen', 'Übersetzung mit der ID %s löschen'];

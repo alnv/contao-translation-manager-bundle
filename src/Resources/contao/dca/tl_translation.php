@@ -18,7 +18,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
             'mode' => 2,
             'flag' => 4,
             'fields' => ['language'],
-            'panelLayout' => 'filter;sort,search,limit'
+            'panelLayout' => 'filter,limit;sort,search'
         ],
         'label' => [
             'fields' => ['name', 'translation'],
@@ -27,20 +27,20 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
         'operations' => [
             'edit' => [
                 'href' => 'act=edit',
-                'icon' => 'header.gif'
+                'icon' => 'header.svg'
             ],
             'copy' => [
                 'href' => 'act=copy',
-                'icon' => 'copy.gif'
+                'icon' => 'copy.svg'
             ],
             'delete' => [
                 'href' => 'act=delete',
-                'icon' => 'delete.gif',
+                'icon' => 'delete.svg',
                 'attributes' => 'onclick="if(!confirm(\'' . ($GLOBALS['TL_LANG']['MSC']['deleteConfirm'] ?? '') . '\'))return false;Backend.getScrollOffset()"'
             ],
             'show' => [
                 'href' => 'act=show',
-                'icon' => 'show.gif'
+                'icon' => 'show.svg'
             ]
         ],
         'global_operations' => [
@@ -52,10 +52,8 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
         ]
     ],
     'palettes' => [
-        '__selector__' => [],
         'default' => 'language,name,translation,invisible',
     ],
-    'subpalettes' => [],
     'fields' => [
         'id' => [
             'sql' => ['type' => 'integer', 'autoincrement' => true, 'notnull' => true, 'unsigned' => true]
