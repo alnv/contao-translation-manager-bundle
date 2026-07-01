@@ -59,7 +59,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
             'sql' => ['type' => 'integer', 'autoincrement' => true, 'notnull' => true, 'unsigned' => true]
         ],
         'tstamp' => [
-            'sql' => ['type' => 'integer', 'notnull' => false, 'unsigned' => true, 'default' => 0]
+            'sql' => "int(10) unsigned NOT NULL default '0'"
         ],
         'language' => [
             'inputType' => 'select',
@@ -95,7 +95,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
                 'allowHtml' => true
             ],
             'search' => true,
-            'sql' => ['type' => 'text', 'notnull' => false]
+            'sql' => 'text NULL'
         ],
         'invisible' => [
             'inputType' => 'checkbox',
@@ -104,7 +104,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
                 'multiple' => false
             ],
             'filter' => true,
-            'sql' => ['type' => 'string', 'fixed' => true, 'length' => 1, 'default' => '']
+            'sql' => "char(1) NOT NULL default ''"
         ]
     ]
 ];
