@@ -1,11 +1,15 @@
 <?php
 
+use Alnv\ContaoTranslationManagerBundle\EventListener\TranslationCacheListener;
 use Contao\System;
 use Contao\DC_Table;
 
 $GLOBALS['TL_DCA']['tl_translation'] = [
     'config' => [
         'dataContainer' => DC_Table::class,
+        'onundo_callback' => [
+            [TranslationCacheListener::class, 'onUndo']
+        ],
         'sql' => [
             'keys' => [
                 'id' => 'primary',

@@ -34,9 +34,9 @@ class Translation extends CacheResolver
         return self::$arrInstances[$strLanguage];
     }
 
-    public function translate($strKey, $strFallbackLabel = '', $arrData = []): string
+    public function translate($strKey, $strFallbackLabel = '', $arrData = [], bool $blnRegister = true): string
     {
-        $strTranslation = $this->get($strKey, $strFallbackLabel);
+        $strTranslation = $this->get($strKey, $strFallbackLabel, $blnRegister);
 
         if ($strTranslation === '' || $strTranslation === null) {
             return '';

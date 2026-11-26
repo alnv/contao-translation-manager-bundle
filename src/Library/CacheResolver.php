@@ -8,11 +8,17 @@ use Contao\Database;
 use Contao\Model;
 use Contao\StringUtil;
 use Contao\System;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 abstract class CacheResolver
 {
+    public const CACHE_POOL = 'alnv.translation_manager.cache';
+
+    public const PARAM_PLACEHOLDERS_ENABLED = 'alnv_translation_manager.placeholders.enabled';
+
+    public const PARAM_PLACEHOLDERS_EXCLUDE = 'alnv_translation_manager.placeholders.exclude';
+
     protected string $strKey;
 
     protected string $strTable;
@@ -20,75 +26,34 @@ abstract class CacheResolver
     protected string $strValue;
 
     protected string $strLanguage;
-    protected FilesystemAdapter $objCache;
 
-    protected static array $arrInitializedLanguages = [];
+    protected static array $arrValues = [];
+
+    protected static array $arrKnown = [];
+
+    protected static ?array $arrPlaceholderConfig = null;
 
     protected static ?object $objScopeMatcher = null;
 
     public function __construct($strLanguage = '')
     {
-        $container = System::getContainer();
-
         if (!$strLanguage) {
-            $request = $container->get('request_stack')->getCurrentRequest();
-            $strLanguage = $GLOBALS['TL_LANGUAGE'] ?: ($request ? $request->getLocale() : 'de');
+            $request = System::getContainer()->get('request_stack')->getCurrentRequest();
+            $strLanguage = ($GLOBALS['TL_LANGUAGE'] ?? '') ?: ($request ? $request->getLocale() : 'de');
         }
 
-        $strRootDir = $container->getParameter('kernel.project_dir');
-        $this->objCache = new FilesystemAdapter('cm.translation.cache.' . $strLanguage, 60, $strRootDir . '/var/cache');
-        $this->strLanguage = $strLanguage;
-
-        if (!isset(self::$arrInitializedLanguages[$strLanguage])) {
-            $this->setDataIntoCache();
-            self::$arrInitializedLanguages[$strLanguage] = true;
-        }
+        $this->strLanguage = (string)$strLanguage;
     }
 
-    protected function setDataIntoCache(): void
+    public static function invalidate(): void
     {
-        $objEntities = $this->getEntities();
+        static::$arrValues = [];
+        static::$arrKnown = [];
 
-        if ($objEntities) {
-            while ($objEntities->next()) {
-                if ($this->strLanguage !== $objEntities->language) {
-                    continue;
-                }
-
-                $strKey = $this->getKeyname($objEntities->{$this->strKey});
-                if (!$strKey) {
-                    continue;
-                }
-
-                $objCacheEntity = $this->objCache->getItem($strKey);
-
-                if (!$objCacheEntity->isHit()) {
-                    $strValue = StringUtil::decodeEntities($objEntities->{$this->strValue});
-                    $objCacheEntity->set($strValue);
-                    $this->objCache->saveDeferred($objCacheEntity);
-                }
-            }
-        }
-
-        $objEmpty = Database::getInstance()->prepare('SELECT * FROM ' . $this->strTable . ' WHERE invisible=?')->execute(1);
-
-        if ($objEmpty) {
-            while ($objEmpty->next()) {
-                $strKey = $this->getKeyname($objEmpty->{$this->strKey});
-                if (!$strKey) {
-                    continue;
-                }
-
-                $objCacheInvisible = $this->objCache->getItem('invisible_' . $strKey);
-                if (!$objCacheInvisible->isHit()) {
-                    $objCacheInvisible->set(true);
-                    $this->objCache->saveDeferred($objCacheInvisible);
-                }
-            }
-        }
-
-        $this->objCache->commit();
+        static::getCachePool()?->clear();
     }
+
+    abstract protected function setModelOptions();
 
     protected function getEntities()
     {
@@ -109,58 +74,215 @@ abstract class CacheResolver
         return null;
     }
 
-    abstract protected function setModelOptions();
-
-    public function get($strKey, $strFallback = '')
+    public function get($strKey, $strFallback = '', bool $blnRegister = true)
     {
         $strKey = $this->getKeyname($strKey);
         if (!$strKey) {
             return $strFallback;
         }
 
-        $objCacheResult = $this->objCache->getItem($strKey);
+        $arrValues = $this->getValues();
 
-        if ($objCacheResult->isHit()) {
-            return $objCacheResult->get();
+        if (\array_key_exists($strKey, $arrValues)) {
+            return $arrValues[$strKey];
         }
 
+        if (!$strFallback || !$blnRegister || !$this->isFrontendRequest() || !$this->shouldRegister($strKey)) {
+            return $strFallback;
+        }
+
+        if (isset($this->getKnownKeys()[$strKey])) {
+            return $strFallback;
+        }
+
+        if (!$this->keyExists($strKey)) {
+            try {
+                $this->createPlaceholder($strKey, (string)$strFallback);
+            } catch (\Exception) {
+                return $strFallback;
+            }
+        }
+
+        $this->rememberKnownKey($strKey);
+
+        return $strFallback;
+    }
+
+    protected function getValues(): array
+    {
+        if (isset(static::$arrValues[$this->strTable][$this->strLanguage])) {
+            return static::$arrValues[$this->strTable][$this->strLanguage];
+        }
+
+        return static::$arrValues[$this->strTable][$this->strLanguage] = $this->remember(
+            $this->getCacheKey('values', $this->strLanguage),
+            function (): array {
+                $arrValues = [];
+                $objEntities = $this->getEntities();
+
+                if ($objEntities) {
+                    while ($objEntities->next()) {
+                        if ($this->strLanguage !== $objEntities->language) {
+                            continue;
+                        }
+
+                        $strKey = $this->getKeyname($objEntities->{$this->strKey});
+
+                        // Bei doppelten Schlüsseln gewinnt der erste Datensatz
+                        if (!$strKey || \array_key_exists($strKey, $arrValues)) {
+                            continue;
+                        }
+
+                        $arrValues[$strKey] = StringUtil::decodeEntities($objEntities->{$this->strValue});
+                    }
+                }
+
+                return $arrValues;
+            }
+        );
+    }
+
+    protected function getKnownKeys(): array
+    {
+        if (isset(static::$arrKnown[$this->strTable])) {
+            return static::$arrKnown[$this->strTable];
+        }
+
+        return static::$arrKnown[$this->strTable] = $this->remember(
+            $this->getCacheKey('known'),
+            fn(): array => $this->loadKnownKeys()
+        );
+    }
+
+    protected function loadKnownKeys(): array
+    {
+        $arrKnown = [];
+        $objRows = Database::getInstance()
+            ->prepare('SELECT DISTINCT ' . Database::quoteIdentifier($this->strKey) . ' FROM ' . $this->strTable)
+            ->execute();
+
+        while ($objRows->next()) {
+            if ($strKey = $this->getKeyname($objRows->{$this->strKey})) {
+                $arrKnown[$strKey] = true;
+            }
+        }
+
+        return $arrKnown;
+    }
+
+    protected function keyExists(string $strKey): bool
+    {
+        return (bool)Database::getInstance()
+            ->prepare('SELECT id FROM ' . $this->strTable . ' WHERE ' . Database::quoteIdentifier($this->strKey) . '=?')
+            ->limit(1)
+            ->execute($strKey)
+            ->numRows;
+    }
+
+    protected function createPlaceholder(string $strKey, string $strFallback): void
+    {
+        $objTranslation = new TranslationModel();
+        $objTranslation->tstamp = time();
+        $objTranslation->invisible = '1';
+        $objTranslation->name = substr($strKey, 0, 255);
+        $objTranslation->translation = $strFallback;
+        $objTranslation->save();
+    }
+
+    protected function rememberKnownKey(string $strKey): void
+    {
+        static::$arrKnown[$this->strTable][$strKey] = true;
+
+        $objPool = static::getCachePool();
+        if ($objPool === null) {
+            return;
+        }
+
+        $objItem = $objPool->getItem($this->getCacheKey('known'));
+        if (!$objItem->isHit()) {
+            return;
+        }
+
+        $arrKnown = (array)$objItem->get();
+        $arrKnown[$strKey] = true;
+        $objPool->save($objItem->set($arrKnown));
+    }
+
+    protected function shouldRegister(string $strKey): bool
+    {
+        $arrConfig = static::getPlaceholderConfig();
+
+        if (!$arrConfig['enabled']) {
+            return false;
+        }
+
+        foreach ($arrConfig['exclude'] as $strPattern) {
+            if (\preg_match($strPattern, $strKey)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function isFrontendRequest(): bool
+    {
         $container = System::getContainer();
         if (self::$objScopeMatcher === null) {
             self::$objScopeMatcher = $container->get('contao.routing.scope_matcher');
         }
 
-        $request = $container->get('request_stack')->getCurrentRequest() ?? Request::create('');
-
-        if (!self::$objScopeMatcher->isFrontendRequest($request) || !$strFallback) {
-            return $strFallback;
-        }
-
-        $objCacheInvisibleResult = $this->objCache->getItem('invisible_' . $strKey);
-        if ($objCacheInvisibleResult->isHit() && $objCacheInvisibleResult->get()) {
-            return $strFallback;
-        }
-
-        $objTranslation = TranslationModel::findOneBy('name', $strKey);
-
-        if ($objTranslation) {
-            return $strFallback;
-        }
-
-        try {
-            $objTranslation = new TranslationModel();
-            $objTranslation->tstamp = time();
-            $objTranslation->invisible = '1';
-            $objTranslation->name = substr($strKey, 0, 255);
-            $objTranslation->translation = $strFallback;
-            $objTranslation->save();
-        } catch (\Exception $exception) {
-        }
-
-        return $strFallback;
+        return self::$objScopeMatcher->isFrontendRequest($container->get('request_stack')->getCurrentRequest() ?? Request::create(''));
     }
 
     protected function getKeyname($strName): string
     {
-        return str_replace(["{", "}", "(", ")", "/", "\\", "@", ':', ' '], '', $name ?? $strName);
+        return str_replace(["{", "}", "(", ")", "/", "\\", "@", ':', ' '], '', (string)$strName);
+    }
+
+    protected static function getPlaceholderConfig(): array
+    {
+        if (static::$arrPlaceholderConfig !== null) {
+            return static::$arrPlaceholderConfig;
+        }
+
+        $container = System::getContainer();
+
+        return static::$arrPlaceholderConfig = [
+            'enabled' => !$container->hasParameter(self::PARAM_PLACEHOLDERS_ENABLED) || $container->getParameter(self::PARAM_PLACEHOLDERS_ENABLED),
+            'exclude' => $container->hasParameter(self::PARAM_PLACEHOLDERS_EXCLUDE) ? array_values((array)$container->getParameter(self::PARAM_PLACEHOLDERS_EXCLUDE)) : [],
+        ];
+    }
+
+    private function remember(string $strCacheKey, callable $callback): mixed
+    {
+        $objPool = static::getCachePool();
+
+        if ($objPool === null) {
+            return $callback();
+        }
+
+        $objItem = $objPool->getItem($strCacheKey);
+
+        if ($objItem->isHit()) {
+            return $objItem->get();
+        }
+
+        $varValue = $callback();
+        $objPool->save($objItem->set($varValue));
+
+        return $varValue;
+    }
+
+    private function getCacheKey(string $strType, string $strLanguage = ''): string
+    {
+        return (string)\preg_replace('/[^A-Za-z0-9_.-]/', '_', $strType . '.' . $this->strTable . ($strLanguage !== '' ? '.' . $strLanguage : ''));
+    }
+
+    private static function getCachePool(): ?CacheItemPoolInterface
+    {
+        $container = System::getContainer();
+
+        return $container->has(self::CACHE_POOL) ? $container->get(self::CACHE_POOL) : null;
     }
 }
