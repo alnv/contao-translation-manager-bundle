@@ -1,8 +1,15 @@
 <?php
 
+use Alnv\ContaoTranslationManagerBundle\EventListener\TranslationCacheListener;
+use Contao\System;
+use Contao\DC_Table;
+
 $GLOBALS['TL_DCA']['tl_translation'] = [
     'config' => [
-        'dataContainer' => 'Table',
+        'dataContainer' => DC_Table::class,
+        'onundo_callback' => [
+            [TranslationCacheListener::class, 'onUndo']
+        ],
         'sql' => [
             'keys' => [
                 'id' => 'primary',
@@ -15,7 +22,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
             'mode' => 2,
             'flag' => 4,
             'fields' => ['language'],
-            'panelLayout' => 'filter;sort,search,limit'
+            'panelLayout' => 'filter,limit;sort,search'
         ],
         'label' => [
             'fields' => ['name', 'translation'],
@@ -24,20 +31,20 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
         'operations' => [
             'edit' => [
                 'href' => 'act=edit',
-                'icon' => 'header.gif'
+                'icon' => 'header.svg'
             ],
             'copy' => [
                 'href' => 'act=copy',
-                'icon' => 'copy.gif'
+                'icon' => 'copy.svg'
             ],
             'delete' => [
                 'href' => 'act=delete',
-                'icon' => 'delete.gif',
-                'attributes' => 'onclick="if(!confirm(\'' . ($GLOBALS['TL_LANG']['MSC']['deleteConfirm']??'') . '\'))return false;Backend.getScrollOffset()"'
+                'icon' => 'delete.svg',
+                'attributes' => 'onclick="if(!confirm(\'' . ($GLOBALS['TL_LANG']['MSC']['deleteConfirm'] ?? '') . '\'))return false;Backend.getScrollOffset()"'
             ],
             'show' => [
                 'href' => 'act=show',
-                'icon' => 'show.gif'
+                'icon' => 'show.svg'
             ]
         ],
         'global_operations' => [
@@ -49,16 +56,14 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
         ]
     ],
     'palettes' => [
-        '__selector__' => [],
         'default' => 'language,name,translation,invisible',
     ],
-    'subpalettes' => [],
     'fields' => [
         'id' => [
-            'sql' => ['type' => 'integer', 'autoincrement' => true, 'notnull' => true, 'unsigned' => true ]
+            'sql' => ['type' => 'integer', 'autoincrement' => true, 'notnull' => true, 'unsigned' => true]
         ],
         'tstamp' => [
-            'sql' => ['type' => 'integer', 'notnull' => false, 'unsigned' => true, 'default' => 0]
+            'sql' => "int(10) unsigned NOT NULL default '0'"
         ],
         'language' => [
             'inputType' => 'select',
@@ -70,20 +75,22 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
                 'includeBlankOption' => true
             ],
             'length' => 32,
-            'flag' => 32,
-            'options' => \System::getLanguages(),
+            'flag' => 3,
+            'options_callback' => function() {
+                return System::getContainer()->get('contao.intl.locales')->getLocales(null, true);
+            },
             'filter' => true,
             'sql' => ['type' => 'string', 'length' => 5, 'default' => '']
         ],
         'name' => [
             'inputType' => 'text',
             'eval' => [
-                'maxlength' => 128,
+                'maxlength' => 255,
                 'mandatory' => true,
                 'tl_class' => 'w50'
             ],
             'search' => true,
-            'sql' => ['type' => 'string', 'length' => 128, 'default' => '']
+            'sql' => ['type' => 'string', 'length' => 255, 'default' => '']
         ],
         'translation' => [
             'inputType' => 'textarea',
@@ -92,7 +99,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
                 'allowHtml' => true
             ],
             'search' => true,
-            'sql' => ['type' => 'text', 'notnull' => false]
+            'sql' => 'text NULL'
         ],
         'invisible' => [
             'inputType' => 'checkbox',
@@ -101,7 +108,7 @@ $GLOBALS['TL_DCA']['tl_translation'] = [
                 'multiple' => false
             ],
             'filter' => true,
-            'sql' => ['type'=>'string', 'fixed'=>true, 'length' => '1', 'default' => '','notnull' => false]
+            'sql' => "char(1) NOT NULL default ''"
         ]
     ]
 ];

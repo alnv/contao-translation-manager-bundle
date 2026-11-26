@@ -1,3 +1,3 @@
 <?php
 
-$GLOBALS['TL_LANG']['MOD']['translation-manager'] = [ 'Übersetzer', '' ];
+$GLOBALS['TL_LANG']['MOD']['translation-manager'] = ['Übersetzer', ''];

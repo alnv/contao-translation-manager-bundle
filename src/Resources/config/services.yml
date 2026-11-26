@@ -1,0 +1,21 @@
+services:
+  alnv.translation_manager.cache:
+    parent: cache.app
+    public: true
+    tags:
+      - { name: cache.pool, default_lifetime: 3600 }
+
+  Alnv\ContaoTranslationManagerBundle\EventListener\TranslationCacheListener:
+    public: true
+    tags:
+      - { name: kernel.event_listener, event: Contao\CoreBundle\Event\InvalidateCacheTagsEvent, method: onInvalidateCacheTags }
+      - { name: kernel.event_listener, event: kernel.terminate, method: onKernelTerminate }
+
+  Alnv\ContaoTranslationManagerBundle\Cache\LegacyCacheClearer:
+    arguments:
+      $projectDir: '%kernel.project_dir%'
+    tags:
+      - { name: kernel.cache_clearer }
+
+  Alnv\ContaoTranslationManagerBundle\InsertTag\TranslateInsertTag:
+    autoconfigure: true

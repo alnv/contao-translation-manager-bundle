@@ -1,8 +1,11 @@
 <?php
 
-define( "CATALOG_TRANSLATION_BUNDLE_VERSION", "1.0" );
+use Contao\ArrayUtil;
+use Alnv\ContaoTranslationManagerBundle\Models\TranslationModel;
+use Alnv\ContaoTranslationManagerBundle\Library\Inserttag;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsInsertTag;
 
-array_insert( $GLOBALS['BE_MOD']['catalog-manager-bundle'], 3, [
+ArrayUtil::arrayInsert($GLOBALS['BE_MOD']['catalog-manager-bundle'], 3, [
     'translation-manager' => [
         'name' => 'translation-manager-bundle',
         'tables' => [
@@ -11,5 +14,8 @@ array_insert( $GLOBALS['BE_MOD']['catalog-manager-bundle'], 3, [
     ]
 ]);
 
-$GLOBALS['TL_HOOKS']['replaceInsertTags'][] = ['Alnv\ContaoTranslationManagerBundle\Library\Inserttag', 'replace'];
-$GLOBALS['TL_MODELS']['tl_translation'] = 'Alnv\ContaoTranslationManagerBundle\Models\TranslationModel';
+if (!class_exists(AsInsertTag::class)) {
+    $GLOBALS['TL_HOOKS']['replaceInsertTags'][] = [Inserttag::class, 'replace'];
+}
+
+$GLOBALS['TL_MODELS']['tl_translation'] = TranslationModel::class;
