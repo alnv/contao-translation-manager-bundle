@@ -17,5 +17,11 @@ services:
     tags:
       - { name: kernel.cache_clearer }
 
+  Alnv\ContaoTranslationManagerBundle\Migration\NullValuesMigration:
+    arguments:
+      $connection: '@database_connection'
+    tags:
+      - { name: contao.migration, priority: 0 }
+
   Alnv\ContaoTranslationManagerBundle\InsertTag\TranslateInsertTag:
     autoconfigure: true
